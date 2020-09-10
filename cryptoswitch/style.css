@@ -1,0 +1,5 @@
+@media screen and (max-width: 600px) {
+a.page.smaller, a.page.larger, span.extend {
+	display: none;
+}
+} 

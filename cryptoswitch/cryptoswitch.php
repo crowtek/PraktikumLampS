@@ -2,8 +2,15 @@
 <?php
 /**
 *Plugin Name: Kryptoswitcher Plugin
-*Description: Bestimmung eines EUR-Wertes einer Kryptowährung zu einem vergangenen Zeitraum.
+*Description: Bestimmung eines EUR-Wertes einer Kryptowährung zu einem vergangenen Zeitraum. Shortcode [crypto]
 **/
+
+add_action( 'wp_enqueue_scripts', 'addCSS' );
+
+function addCSS() {
+    wp_register_style( 'crypto-style', plugins_url('style.css', __FILE__) );
+    wp_enqueue_style( 'crypto-style' );
+}
 
 function getHistory($id, $date) 
 {
@@ -30,15 +37,8 @@ $coinValue = $response['market_data']['current_price']['eur'];
 return (double)$coinValue;
 }
 
-add_action("admin_menu", "addMenu");
-function addMenu()
+function createCrypto()
 {
-  add_menu_page("Kryptowährung Plugin", "Kryptowährung Plugin", 4, "kryptowährung Plugin", "exampleMenu" );
-}
-
-function exampleMenu()
-{
-
 $coinValue = null;
 
 if(isset($_POST['SubmitButton'])){ //check if form was submitted
@@ -74,13 +74,14 @@ echo <<<EX
 	<br><label for="Euro">Euro:</label><br>
 </form><br>
 
-
 EX;
 	if(!is_null($coinValue))
 	{
-		echo "<b>".$coinValue."€ <b>";
-	}
+		echo "<center><b>".$coinValue."€ <b></center>";
+	}	
 }
+
+add_shortcode("crypto", "createCrypto");
 
 ?>
 
