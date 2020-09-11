@@ -5,12 +5,7 @@
 *Description: Bestimmung eines EUR-Wertes einer Kryptowährung zu einem vergangenen Zeitraum. Shortcode [crypto]
 **/
 
-add_action( 'wp_enqueue_scripts', 'addCSS' );
-
-function addCSS() {
-    wp_register_style( 'crypto-style', plugins_url('style.css', __FILE__) );
-    wp_enqueue_style( 'crypto-style' );
-}
+defined( 'ABSPATH' ) || exit();
 
 function getHistory($id, $date) 
 {
@@ -40,45 +35,58 @@ return (double)$coinValue;
 function createCrypto()
 {
 $coinValue = null;
+$errorMessage = "";
+$message = "";
 
-if(isset($_POST['SubmitButton'])){ //check if form was submitted
+if(isset($_POST['SubmitButton'])) { //check if form was submitted
   $value = $_POST['cryptoValue']; //get input text
   $cryptoCurrency = $_POST['cryptoCurrency'];
   $date = $_POST['date'];
-  $date = new DateTime($date);
-  $date = $date->format('d-m-Y');
-  $rawCoinValue = getHistory($cryptoCurrency, $date) * $value;
-  $coinValue = number_format($rawCoinValue, 2, '.', '');
+  	if($value && $cryptoCurrency && $date) {
+	  $date = new DateTime($date);
+	  $date = $date->format('d-m-Y');
+	  $rawCoinValue = getHistory($cryptoCurrency, $date) * $value;
+	  $coinValue = number_format($rawCoinValue, 2, '.', '');
+	} else {
+		$errorMessage = '<center style="color: red;">Fehler: Es müssen alle Felder ausgefüllt sein.</center>';
+	}
+
+	if($coinValue)
+	{
+		$message = "<center><b>".$coinValue."€ </b></center>";
+	}
 }
 
-echo <<<EX
+$output = <<<HTML
 
-<h2>Kryptoswitcher Plugin</h2>
+<div class="cryptoswitcher">
+	<h2>Kryptoswitcher Plugin</h2>
 
-<form action="" method="post">
-  <label for="Kryptowährung">Kryptowährung:</label><br>
-  <input type="number" step="any" name="cryptoValue" value="">
+	<form action="" method="post">
+	  <label for="Kryptowährung">Kryptowährung:</label><br>
+	  <input type="number" step="any" name="cryptoValue" value="">
 
-	<select name="cryptoCurrency">
-		<option value="bitcoin">BitCoin</option>
-		<option value="bitcoin-cash">Bitcoin Cash</option>
-		<option value="litecoin">Litecoin</option>
-		<option value="dash">Dash</option>
-	</select><br>
+		<select name="cryptoCurrency">
+			<option value="bitcoin">BitCoin</option>
+			<option value="bitcoin-cash">Bitcoin Cash</option>
+			<option value="litecoin">Litecoin</option>
+			<option value="dash">Dash</option>
+		</select><br>
 
-  	<label for="time">Datum:</label><br>
-    <input type="date" id="time" name="date" value="">
+	  	<label for="time">Datum:</label><br>
+	    <input type="date" id="time" name="date" value="">
 
-	<input type="submit" name="SubmitButton" value="Submit">
+		<input type="submit" name="SubmitButton" value="Submit">
 
-	<br><label for="Euro">Euro:</label><br>
-</form><br>
+		<br><label for="Euro">Euro:</label><br>
+	</form><br>
+	{$errorMessage}
+	{$message}
+</div>	
 
-EX;
-	if(!is_null($coinValue))
-	{
-		echo "<center><b>".$coinValue."€ <b></center>";
-	}	
+HTML;
+	
+return $output;		
 }
 
 add_shortcode("crypto", "createCrypto");
